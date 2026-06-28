@@ -1,62 +1,63 @@
 ﻿using System;
-
 using System.IO;
-
 using System.Collections.Generic;
 
-
-class Program
+namespace tp9
 {
-    static void Main(string[] args)
+    class Program
     {
-        string ruta;
-
-        do
+        static void Main(string[] args)
         {
-            Console.WriteLine("Ingrese la ruta a la cual quiere acceder");
-            ruta = Console.ReadLine();
+            Console.WriteLine("Ingrese La Ruta del Directorio");
+            string ruta = Console.ReadLine();
 
-            if (!Directory.Exists(ruta))
+            //verificamos si exite la ruta del directorio
+            while (!Directory.Exists(ruta))
             {
-                Console.WriteLine("la ruta no existe.");
+                Console.WriteLine("No se encontro el directorio");
+                Console.WriteLine();
+                Console.WriteLine("Ingrese nuevamente una ruta del directorio");
+                ruta = Console.ReadLine();
             }
-        } while (!Directory.Exists(ruta));
+            Console.WriteLine("Directorio valido");
 
-        Console.WriteLine("Carpetas:");
-        string[] carpetas = Directory.GetDirectories(ruta);
+            //Arreglo con todas las CARPETAS que estan dentro del directorio indicado por la ruta
+            string[] carpetas = Directory.GetDirectories(ruta);
+            Console.WriteLine();
+            Console.WriteLine("Carpetas");
 
-        foreach (string c in carpetas)
-        {
-            Console.WriteLine(Path.GetFileName(c));
+            foreach (string c in carpetas)
+            {
+                Console.WriteLine(Path.GetFileName(c));//tomamos la ultima parte de la ruta
+            }
+
+            Console.WriteLine();
+            //arreglo con todos los ARCHIVOS que estan en el directorio indicado por la ruta
+            string[] archivos = Directory.GetFiles(ruta);
+            Console.WriteLine("Archivos");
+            foreach (string a in archivos)
+            {
+                //accedemos a toda la informacion del archivo
+                FileInfo info = new FileInfo(a);
+                double kb = info.Length / 1024.0;
+                Console.WriteLine("Nombre del archivo: " + info.Name + " Tamaño: " + kb.ToString("F2") + " kb");//toString redondea a 2 decimales
+            }
+
+            //unimos el ultimo nombre de la carpata con el archivo.csv
+            string rutaCSV = Path.Combine(ruta, "reportes_archivo.csv");
+
+            StreamWriter sw = new StreamWriter(rutaCSV);
+
+            sw.WriteLine("Nombre , Tamaño , Fecha ");
+
+            foreach (string a in archivos)
+            {
+                //accedemos a toda la informacion del archivo
+                FileInfo info = new FileInfo(a);
+                double kb = info.Length / 1024.0;
+                sw.WriteLine(info.Name + " ," + kb.ToString("F2") + " kb ," + info.LastWriteTime);
+            }
+            sw.Close();
         }
-        string[] files = Directory.GetFiles(ruta);
-        List<Archivo> listadearchivos = new List<Archivo>();
-
-        Console.WriteLine("Archivos");
-        foreach (string f in files)
-        {
-            FileInfo info = new FileInfo(f);
-            Archivo a = new Archivo();
-
-            a.Name = info.Name;
-            a.Tamanio = Math.Round(info.Length / 1024.0, 2); //redondea a 2 decimales
-            a.Date = info.LastWriteTime;
-
-            listadearchivos.Add(a);
-            Console.WriteLine(a.Name + " " + a.Tamanio + "Kb");
-        }
-
-        string rutaCsv = Path.Combine(ruta, "reporte_archivos.csv");
-        List<string> lineas = new List<string>();
-        lineas.Add("Nombre,tamanio(KB),FechaDeModificacion");
-
-        foreach (Archivo a in listadearchivos)
-        {
-            lineas.Add(a.Name + a.Tamanio + a.Date);
-        }
-        ;
-        File.WriteAllLines(rutaCsv, lineas);
-        Console.WriteLine("csv generado correctamente");
-
     }
 }
